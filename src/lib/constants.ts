@@ -189,6 +189,8 @@ export const TEXTS = {
   aRelearn: (center: string, dirWord: string, peri: string) =>
     `刚才中央是${center}，周围在${dirWord}是${peri}。我们再看一遍。`,
   bBeforeShow: '别急，看稳了——',
+  bReverseHint: '这回倒着说',
+  bReverseLabel: '反着说',
   bAskOrder: '请按顺序说出',
   bAskReverse: '请反过来，倒着说一遍',
   bPerfect: (n: number) => `太棒了，${n}位全部记住！`,

@@ -111,7 +111,8 @@ export default function GameB({ playId, resume, onFinish }: GameProps): React.JS
     // 生成本题视觉干扰（固定，不随渲染变化）
     distractorsRef.current = sample(B_DISTRACT_EMOJI, 3);
     update({ seq, qLevel: lv, input: '', phase: 'show' });
-    speak(TEXTS.bBeforeShow);
+    // 反向局在展示数字的同时就提示「这回倒着说」，不能等数字消失才说
+    speak(B_LEVELS[lv].reverse ? `${TEXTS.bReverseHint}，${TEXTS.bBeforeShow}` : TEXTS.bBeforeShow);
     timerRef.current = window.setTimeout(() => {
       update({ phase: 'fading' });
       timerRef.current = window.setTimeout(() => {
@@ -279,9 +280,16 @@ export default function GameB({ playId, resume, onFinish }: GameProps): React.JS
 
   const s = spec();
   const digits = B_LEVELS[gs.qLevel].digits;
+  const isReverse = B_LEVELS[gs.qLevel].reverse;
   const visualDistract = s.distract === 'visual' || s.distract === 'both';
   const panelVisible = gs.phase === 'wait' || gs.phase === 'answer';
   const canSubmit = gs.input.length >= digits && panelVisible;
+  // 反向局的醒目提示：数字还在屏幕上时就要告诉用户
+  const reverseBadge = isReverse ? (
+    <p className="mb-4 rounded-full bg-[#F3EDE3] px-6 py-2 text-[1.5rem] font-semibold text-[#C2703E]">
+      🔁 {TEXTS.bReverseHint}
+    </p>
+  ) : null;
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[520px] flex-col px-5 pt-6 pb-[calc(120px+env(safe-area-inset-bottom))]">
@@ -291,27 +299,29 @@ export default function GameB({ playId, resume, onFinish }: GameProps): React.JS
       {/* 主舞台 */}
       <div className="relative mt-4 flex min-h-[26dvh] flex-1 items-center justify-center">
         {gs.phase === 'show' || gs.phase === 'fading' ? (
-          <div
-            className={`text-center font-bold tracking-[0.2em] text-[#3E342B] ${
-              gs.phase === 'fading' ? 'bf-fade-out' : ''
-            }`}
-            style={{ fontSize: '4.5rem' }}
-            aria-label={`数字 ${gs.seq.split('').join(' ')}`}
-          >
-            {gs.seq.split('').map((ch, i) => (
-              <span
-                key={`${gs.qIndex}-${i}`}
-                className="bf-pop mx-1 inline-block"
-                style={{ animationDelay: `${i * 120}ms` }}
-              >
-                {ch}
-              </span>
-            ))}
+          <div className={`flex flex-col items-center ${gs.phase === 'fading' ? 'bf-fade-out' : ''}`}>
+            {reverseBadge}
+            <div
+              className="text-center font-bold tracking-[0.2em] text-[#3E342B]"
+              style={{ fontSize: '4.5rem' }}
+              aria-label={`数字 ${gs.seq.split('').join(' ')}`}
+            >
+              {gs.seq.split('').map((ch, i) => (
+                <span
+                  key={`${gs.qIndex}-${i}`}
+                  className="bf-pop mx-1 inline-block"
+                  style={{ animationDelay: `${i * 120}ms` }}
+                >
+                  {ch}
+                </span>
+              ))}
+            </div>
           </div>
         ) : null}
 
         {gs.phase === 'wait' ? (
-          <div className="bf-fade-in relative flex h-full w-full items-center justify-center">
+          <div className="bf-fade-in relative flex h-full w-full flex-col items-center justify-center">
+            {reverseBadge}
             <p className="text-[1.5rem] text-[#8A7D6E]">记稳了——</p>
             {/* 视觉干扰：淡色漂浮 emoji，绝不遮挡面板 */}
             {visualDistract
@@ -335,7 +345,7 @@ export default function GameB({ playId, resume, onFinish }: GameProps): React.JS
 
         {gs.phase === 'answer' ? (
           <p className="bf-fade-in text-center text-[1.5rem] font-medium">
-            {B_LEVELS[gs.qLevel].reverse ? '请反过来，倒着说一遍' : '请按顺序说出'}
+            {isReverse ? TEXTS.bAskReverse : TEXTS.bAskOrder}
           </p>
         ) : null}
 
@@ -358,9 +368,9 @@ export default function GameB({ playId, resume, onFinish }: GameProps): React.JS
             <p className="mt-6 text-center font-bold tracking-[0.2em]" style={{ fontSize: '4.5rem' }}>
               {gs.seq.split('').join(' ')}
             </p>
-            {B_LEVELS[gs.qLevel].reverse ? (
+            {isReverse ? (
               <p className="mt-3 text-[1.5rem] text-[#8A7D6E]">
-                反着说：{targetOf(gs.seq, true).split('').join(' ')}
+                {TEXTS.bReverseLabel}：{targetOf(gs.seq, true).split('').join(' ')}
               </p>
             ) : null}
           </div>
