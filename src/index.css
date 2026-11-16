@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== 设计 Tokens（见 DESIGN.md） ===== */
+:root {
+  --bg: #faf6ef;
+  --card: #ffffff;
+  --card-soft: #f3ede3;
+  --text: #3e342b;
+  --text-soft: #8a7d6e;
+  --primary: #c2703e;
+  --primary-press: #a95f32;
+  --ok: #5c8a5a;
+  --honey: #e8b84b;
+  --mask: #ede6da;
+  --border: #e4dacb;
+  --shadow: 0 4px 16px rgb(62 52 43 / 8%);
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* 特大字档：root font-size ×1.15，全部 rem 字号即时放大 */
+html.big-font {
+  font-size: 115%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    -apple-system, 'PingFang SC', MiSans, 'HarmonyOS Sans SC',
+    'Microsoft YaHei', sans-serif;
+  font-size: 1.5rem; /* 24px 正文下限 */
+  line-height: 1.5;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#app {
+  min-height: 100dvh;
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+/* ===== 通用动效 ===== */
+@keyframes bf-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bf-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes bf-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bf-pop {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes bf-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.bf-fade-in {
+  animation: bf-fade-in 0.6s var(--ease-soft) both;
+}
+
+.bf-fade-out {
+  animation: bf-fade-out 0.6s var(--ease-soft) both;
+}
+
+.bf-rise {
+  animation: bf-rise 0.6s var(--ease-soft) both;
+}
+
+.bf-pop {
+  animation: bf-pop 0.4s var(--ease-soft) both;
+}
+
+.bf-float {
+  animation: bf-float 3s ease-in-out infinite;
+}
+
+/* 按钮按下反馈：轻微下沉，80ms */
+.bf-press {
+  transition:
+    transform 80ms var(--ease-soft),
+    background-color 300ms var(--ease-soft),
+    opacity 300ms var(--ease-soft);
+}
+
+.bf-press:active {
+  transform: scale(0.97);
+}
+
+/* 阶段切换容器 */
+.bf-stage {
+  transition:
+    opacity 600ms var(--ease-soft),
+    transform 600ms var(--ease-soft);
+}
+
+/* 尊重减少动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

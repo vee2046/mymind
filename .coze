@@ -1,0 +1,17 @@
+[project]
+requires = [ "nodejs-24" ]
+project_type = "web"
+template = "vite"
+version = "0.1.8"
+appliedPatches = [ ]
+
+[dev]
+build = [ "pnpm", "install", "--prefer-frozen-lockfile" ]
+run = [ "pnpm", "dev" ]
+validate = [ "pnpm", "validate" ]
+deps = [ "git" ]
+
+[deploy]
+build = [ "pnpm", "build" ]
+run = [ "pnpm", "preview" ]
+deps = [ "git" ]
