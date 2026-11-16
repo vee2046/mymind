@@ -2,7 +2,7 @@
 // ABOUTME: 时长微调（×0.85/×1.2）+ 级别爬升双维自适应；答错重演重训；无红色无倒计时
 
 import { useEffect, useRef, useState } from 'react';
-import { TopInfo } from '../components/ui';
+import { AudioToggles, TopInfo } from '../components/ui';
 import { playSoftChime, playSuccess } from '../lib/audio';
 import {
   A_CENTER_NAMES,
@@ -322,9 +322,10 @@ export default function GameA({ playId, resume, onFinish }: GameProps): React.JS
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[520px] flex-col px-5 pt-6 pb-[calc(120px+env(safe-area-inset-bottom))]">
       <TopInfo text={`${GAME_NAMES.A} · 第${gs.qIndex + 1}题/${SET_SIZE} · L${gs.level}`} />
+      <AudioToggles />
 
       {/* 主舞台：展示 / 遮罩 / 反馈 */}
-      <div className="relative mt-4 min-h-[46dvh] flex-1">
+      <div className="relative mt-4 min-h-[42dvh] flex-1">
         {q && (showing || fading) ? (
           <div
             className={`absolute inset-0 rounded-3xl border-2 border-dashed border-[#E4DACB] ${

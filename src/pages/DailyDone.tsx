@@ -2,7 +2,7 @@
 // ABOUTME: 同日不重复弹（Game.tsx 已置标记）；TTS 整段播报 1 次
 
 import { useEffect, useMemo, useState } from 'react';
-import { HomeButton, PageShell, PrimaryButton, SoftButton } from '../components/ui';
+import { PageShell, PrimaryButton, SoftButton } from '../components/ui';
 import { DAILY_LIMIT_SETS, TEXTS } from '../lib/constants';
 import { getAllLogs } from '../lib/db';
 import { goHome } from '../lib/router';
@@ -123,8 +123,6 @@ export default function DailyDone(): React.JSX.Element {
         <PrimaryButton onClick={() => void onShare()}>把今天发给家人</PrimaryButton>
         <SoftButton onClick={() => goHome()}>回家</SoftButton>
       </div>
-
-      <HomeButton />
     </PageShell>
   );
 }

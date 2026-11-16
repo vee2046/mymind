@@ -1,8 +1,19 @@
 // ABOUTME: WebAudio 合成音效（成功上行三音 / 柔和二音），无音频文件
 // ABOUTME: 首次用户手势后创建 AudioContext；不可用时静默
 
+import { loadSettings } from './storage';
+
 let ctx: AudioContext | null = null;
 let tried = false;
+
+/** 音效开关（bf_settings.sfxOn，默认关闭） */
+function sfxEnabled(): boolean {
+  try {
+    return loadSettings().sfxOn === true;
+  } catch {
+    return false;
+  }
+}
 
 function ensureCtx(): AudioContext | null {
   if (ctx) {
@@ -24,9 +35,17 @@ function ensureCtx(): AudioContext | null {
   return ctx;
 }
 
+/** 打开音效开关时立刻在用户手势内创建/恢复 AudioContext（浏览器自动播放策略） */
+export function primeAudio(): void {
+  if (!sfxEnabled()) return;
+  const ac = ensureCtx();
+  if (ac && ac.state === 'suspended') void ac.resume().catch(() => undefined);
+}
+
 /** App 启动时调用：挂手势解锁（iOS/微信需要） */
 export function initAudioOnGesture(): void {
   const unlock = (): void => {
+    if (!sfxEnabled()) return; // 音效关闭时不创建 AudioContext（省电）
     ensureCtx();
   };
   window.addEventListener('pointerdown', unlock);
@@ -41,6 +60,7 @@ interface ToneOpts {
 }
 
 function tone({ freq, startAt, duration, type = 'sine', peak = 0.22 }: ToneOpts): void {
+  if (!sfxEnabled()) return; // 音效关闭 → 静默（所有音效唯一出口）
   const ac = ensureCtx();
   if (!ac) return;
   try {

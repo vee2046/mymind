@@ -2,7 +2,7 @@
 // ABOUTME: 自绘数字面板（0 系统键盘）；等待期提前按键有效（E-08）；答错重训降级
 
 import { useEffect, useRef, useState } from 'react';
-import { TopInfo } from '../components/ui';
+import { AudioToggles, TopInfo } from '../components/ui';
 import { playSoftChime, playSuccess } from '../lib/audio';
 import {
   AUTO_SUBMIT_MS,
@@ -286,9 +286,10 @@ export default function GameB({ playId, resume, onFinish }: GameProps): React.JS
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[520px] flex-col px-5 pt-6 pb-[calc(120px+env(safe-area-inset-bottom))]">
       <TopInfo text={`${GAME_NAMES.B} · 第${gs.qIndex + 1}题/${SET_SIZE} · L${gs.level}`} />
+      <AudioToggles />
 
       {/* 主舞台 */}
-      <div className="relative mt-4 flex min-h-[30dvh] flex-1 items-center justify-center">
+      <div className="relative mt-4 flex min-h-[26dvh] flex-1 items-center justify-center">
         {gs.phase === 'show' || gs.phase === 'fading' ? (
           <div
             className={`text-center font-bold tracking-[0.2em] text-[#3E342B] ${

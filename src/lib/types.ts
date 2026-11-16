@@ -6,7 +6,8 @@ import type { GameId } from './constants';
 /** bf_settings：保留在清空数据之后 */
 export interface Settings {
   fontSize: 1 | 1.15;
-  ttsOn: boolean;
+  ttsOn: boolean; // 语音播报，默认关闭
+  sfxOn: boolean; // 音效（WebAudio 合成音），默认关闭
   ttsRate: number; // 0.7–1.3
   lastGameId: GameId | null;
   onboarded: boolean; // 添加到主屏引导卡已关闭

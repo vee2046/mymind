@@ -1,7 +1,13 @@
-// ABOUTME: 共享 UI 组件（页面壳 / 主按钮 / 回家按钮 / 卡片 / 弹窗）
+// ABOUTME: 共享 UI 组件（页面壳 / 主按钮 / 回家按钮 / 卡片 / 弹窗 / 开关）
 // ABOUTME: 尺寸规范：可点 ≥64px，主按钮 88px，间距 ≥16px（G-02）
 
+import { useState } from 'react';
 import type { ReactNode } from 'react';
+import { TEXTS } from '../lib/constants';
+import { primeAudio } from '../lib/audio';
+import { loadSettings, saveSettings } from '../lib/storage';
+import { stopSpeak } from '../lib/tts';
+import type { Settings } from '../lib/types';
 import { goHome } from '../lib/router';
 
 /** 页面壳：移动优先、桌面居中、安全区适配 */
@@ -113,6 +119,103 @@ export function Card({
   return (
     <div className={`rounded-2xl bg-white shadow-[0_4px_16px_rgb(62_52_43/0.08)] ${className}`}>
       {children}
+    </div>
+  );
+}
+
+/** 设置项：左侧名称 + 说明，右侧开关（≥64px，苔绿=开） */
+export function ToggleRow({
+  label,
+  hint,
+  checked,
+  onChange,
+}: {
+  label: string;
+  hint?: string;
+  checked: boolean;
+  onChange: (next: boolean) => void;
+}): React.JSX.Element {
+  return (
+    <div className="flex min-h-[64px] items-center justify-between gap-4">
+      <div className="min-w-0">
+        <p className="text-[1.375rem]">{label}</p>
+        {hint ? <p className="mt-1 text-[1.125rem] text-[#8A7D6E]">{hint}</p> : null}
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
+        onClick={() => onChange(!checked)}
+        className={`bf-press h-[64px] w-[112px] shrink-0 rounded-full p-2 transition-colors ${
+          checked ? 'bg-[#5C8A5A]' : 'bg-[#E4DACB]'
+        }`}
+      >
+        <span
+          className={`block h-[48px] w-[48px] rounded-full bg-white shadow transition-transform ${
+            checked ? 'translate-x-[48px]' : 'translate-x-0'
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
+/** 快捷开关小圆片（游戏内用；与设置页同一份 bf_settings） */
+function ToggleChip({
+  icon,
+  label,
+  on,
+  onToggle,
+}: {
+  icon: string;
+  label: string;
+  on: boolean;
+  onToggle: () => void;
+}): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={on}
+      className={`bf-press flex min-h-[64px] items-center gap-2 rounded-full px-5 text-[1.25rem] font-medium ${
+        on ? 'bg-[#5C8A5A] text-white' : 'bg-[#F3EDE3] text-[#8A7D6E]'
+      }`}
+    >
+      <span aria-hidden className="text-[1.5rem]">{icon}</span>
+      <span>{label}</span>
+      <span className="text-[1.125rem]">{on ? TEXTS.settingsOn : TEXTS.settingsOff}</span>
+    </button>
+  );
+}
+
+/**
+ * P2 游戏内的语音/音效快捷开关（≥64px 可点）。
+ * 与设置页读写同一份 bf_settings.sfxOn / ttsOn，改动立即生效。
+ */
+export function AudioToggles(): React.JSX.Element {
+  const [settings, setSettings] = useState<Settings>(() => loadSettings());
+  const patch = (next: Partial<Settings>): void => {
+    const merged = { ...settings, ...next };
+    setSettings(merged);
+    saveSettings(merged);
+    if (next.ttsOn === false) stopSpeak(); // 关语音即刻停掉正在播的内容
+    if (next.sfxOn === true) primeAudio(); // 开音效：趁这次点击创建 AudioContext
+  };
+  return (
+    <div className="mt-3 flex items-center justify-center gap-3">
+      <ToggleChip
+        icon="🎤"
+        label={TEXTS.settingsGameVoice}
+        on={settings.ttsOn}
+        onToggle={() => patch({ ttsOn: !settings.ttsOn })}
+      />
+      <ToggleChip
+        icon="🔔"
+        label={TEXTS.settingsGameSfx}
+        on={settings.sfxOn}
+        onToggle={() => patch({ sfxOn: !settings.sfxOn })}
+      />
     </div>
   );
 }

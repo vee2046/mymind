@@ -1,16 +1,12 @@
 // ABOUTME: P5 记录页：本周天数 + 三游戏打卡块（三态箭头）+ 周鼓励语
-// ABOUTME: 底部辅助：导出 CSV / 清空数据（双确认）/ 添加到主屏 / 特大字与语音设置
+// ABOUTME: 底部辅助：设置入口 / 导出 CSV / 清空数据（双确认）/ 添加到主屏
 
 import { useEffect, useState } from 'react';
 import { Card, HomeButton, PageShell, SoftButton } from '../components/ui';
 import { GAME_ICONS, GAME_NAMES, WEEKLY_PRAISE, type GameId } from '../lib/constants';
 import { clearLogs, getAllLogs } from '../lib/db';
-import {
-  clearAllData,
-  loadFlags,
-  loadSettings,
-  saveSettings,
-} from '../lib/storage';
+import { navigate } from '../lib/router';
+import { clearAllData, loadFlags } from '../lib/storage';
 import {
   aggregatePlays,
   arrowOf,
@@ -22,7 +18,7 @@ import {
   type PlayAgg,
 } from '../lib/stats';
 import { csvEscape } from '../lib/utils';
-import type { SessionLog, Settings } from '../lib/types';
+import type { SessionLog } from '../lib/types';
 
 const GAME_IDS: GameId[] = ['A', 'B', 'C'];
 
@@ -77,7 +73,6 @@ function exportCsv(logs: SessionLog[]): void {
 export default function Records(): React.JSX.Element {
   const [logs, setLogs] = useState<SessionLog[] | null>(null);
   const [plays, setPlays] = useState<PlayAgg[]>([]);
-  const [settings, setSettings] = useState<Settings>(loadSettings);
   const [confirming, setConfirming] = useState(false);
   const [showA2HS, setShowA2HS] = useState(false);
   const [trimmed] = useState(() => loadFlags().storageTrimmed);
@@ -101,15 +96,6 @@ export default function Records(): React.JSX.Element {
     clearAllData();
     setConfirming(false);
     reload();
-  };
-
-  const patchSettings = (patch: Partial<Settings>): void => {
-    const next = { ...settings, ...patch };
-    setSettings(next);
-    saveSettings(next);
-    if (patch.fontSize !== undefined) {
-      document.documentElement.classList.toggle('big-font', patch.fontSize > 1);
-    }
   };
 
   if (!logs) {
@@ -176,78 +162,9 @@ export default function Records(): React.JSX.Element {
       {/* P5-4 周鼓励语 */}
       <p className="mt-5 text-center text-[1.5rem] font-medium">{weeklyPraise(weekDays)}</p>
 
-      {/* 设置区 */}
-      <Card className="mt-6 flex flex-col gap-5 px-5 py-5">
-        <p className="text-[1.375rem] font-semibold">舒心的设置</p>
-
-        {/* 特大字开关（F-P5-08：立即生效无重载） */}
-        <label className="flex min-h-[64px] items-center justify-between gap-4">
-          <span className="text-[1.375rem]">特大字</span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={settings.fontSize > 1}
-            onClick={() => patchSettings({ fontSize: settings.fontSize > 1 ? 1 : 1.15 })}
-            className={`bf-press h-[64px] w-[112px] rounded-full p-2 transition-colors ${
-              settings.fontSize > 1 ? 'bg-[#5C8A5A]' : 'bg-[#E4DACB]'
-            }`}
-          >
-            <span
-              className={`block h-[48px] w-[48px] rounded-full bg-white shadow transition-transform ${
-                settings.fontSize > 1 ? 'translate-x-[48px]' : 'translate-x-0'
-              }`}
-            />
-          </button>
-        </label>
-
-        {/* 语音播报开关（G-01） */}
-        <label className="flex min-h-[64px] items-center justify-between gap-4">
-          <span className="text-[1.375rem]">语音播报</span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={settings.ttsOn}
-            onClick={() => patchSettings({ ttsOn: !settings.ttsOn })}
-            className={`bf-press h-[64px] w-[112px] rounded-full p-2 transition-colors ${
-              settings.ttsOn ? 'bg-[#5C8A5A]' : 'bg-[#E4DACB]'
-            }`}
-          >
-            <span
-              className={`block h-[48px] w-[48px] rounded-full bg-white shadow transition-transform ${
-                settings.ttsOn ? 'translate-x-[48px]' : 'translate-x-0'
-              }`}
-            />
-          </button>
-        </label>
-
-        {/* 语速（E-06：收敛 0.7–1.3） */}
-        <div>
-          <p className="text-[1.375rem]">语速</p>
-          <div className="mt-3 grid grid-cols-3 gap-3">
-            {([
-              { v: 0.7, label: '慢一点' },
-              { v: 1.0, label: '正好' },
-              { v: 1.3, label: '快一点' },
-            ] as const).map((opt) => (
-              <button
-                key={opt.v}
-                type="button"
-                onClick={() => patchSettings({ ttsRate: opt.v })}
-                className={`bf-press flex min-h-[64px] items-center justify-center rounded-2xl text-[1.25rem] ${
-                  settings.ttsRate === opt.v
-                    ? 'bg-[#C2703E] text-white'
-                    : 'bg-[#F3EDE3] text-[#3E342B]'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </Card>
-
       {/* P5-6 底部辅助 */}
       <div className="mt-5 grid grid-cols-1 gap-3">
+        <SoftButton onClick={() => navigate('/settings')}>设置</SoftButton>
         <SoftButton onClick={() => exportCsv(logs)}>导出记录（CSV）</SoftButton>
         <SoftButton onClick={() => setShowA2HS((v) => !v)}>添加到主屏的方法</SoftButton>
         {showA2HS ? (

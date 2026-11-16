@@ -11,6 +11,7 @@ import Game from './pages/Game';
 import SetEnd from './pages/SetEnd';
 import DailyDone from './pages/DailyDone';
 import Records from './pages/Records';
+import SettingsPage from './pages/Settings';
 
 /** 特大字档：toggle 后立即全局生效（×1.15），无重载（F-P5-08） */
 export function applyFontScale(): void {
@@ -45,6 +46,8 @@ export default function App(): React.JSX.Element {
       return <DailyDone />;
     case 'records':
       return <Records />;
+    case 'settings':
+      return <SettingsPage />;
     case 'home':
     default:
       return <Home />;

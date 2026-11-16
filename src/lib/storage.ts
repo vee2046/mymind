@@ -34,7 +34,8 @@ function writeJson(key: string, value: unknown): void {
 // ===== settings =====
 export const DEFAULT_SETTINGS: Settings = {
   fontSize: 1,
-  ttsOn: true,
+  ttsOn: false,
+  sfxOn: false,
   ttsRate: 1.0,
   lastGameId: null,
   onboarded: false,
@@ -46,7 +47,9 @@ export function loadSettings(): Settings {
   if (!raw) return { ...DEFAULT_SETTINGS };
   return {
     fontSize: raw.fontSize === 1.15 ? 1.15 : 1,
-    ttsOn: raw.ttsOn !== false,
+    // 语音/音效默认关闭：仅当显式存过 true 才开启
+    ttsOn: raw.ttsOn === true,
+    sfxOn: raw.sfxOn === true,
     ttsRate: clamp(typeof raw.ttsRate === 'number' ? raw.ttsRate : 1.0, 0.7, 1.3),
     lastGameId:
       raw.lastGameId === 'A' || raw.lastGameId === 'B' || raw.lastGameId === 'C'

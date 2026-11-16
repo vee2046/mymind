@@ -196,6 +196,13 @@ export default function Home(): React.JSX.Element {
         </SoftButton>
       </div>
 
+      {/* 设置入口（语音 / 音效 / 语速 / 特大字） */}
+      <div className="mt-4">
+        <SoftButton className="w-full" onClick={() => navigate('/settings')}>
+          {TEXTS.settingsEntry}
+        </SoftButton>
+      </div>
+
       {/* P1-5 添加到主屏引导卡（仅首次访问） */}
       {!settings.onboarded ? (
         <Card className="bf-rise mt-6 px-6 py-5">

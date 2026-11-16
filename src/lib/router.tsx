@@ -10,10 +10,11 @@ export type Route =
   | { name: 'game'; id: GameId }
   | { name: 'end'; playId: string }
   | { name: 'daily' }
-  | { name: 'records' };
+  | { name: 'records' }
+  | { name: 'settings' };
 
 /** 路由 token（按位置扫描，兼容任意部署前缀，如 /mindx/game/A） */
-const ROUTE_TOKENS = ['game', 'end', 'daily-done', 'records'] as const;
+const ROUTE_TOKENS = ['game', 'end', 'daily-done', 'records', 'settings'] as const;
 
 export function parsePath(path: string): Route {
   const parts = path.split('/').filter(Boolean);
@@ -32,6 +33,7 @@ export function parsePath(path: string): Route {
     return { name: 'home' };
   }
   if (token === 'daily-done') return { name: 'daily' };
+  if (token === 'settings') return { name: 'settings' };
   return { name: 'records' };
 }
 

@@ -2,7 +2,7 @@
 // ABOUTME: 无"答错"概念，不匹配只扣回；难度只随完成局数递增；步数越少越稳
 
 import { useEffect, useRef, useState } from 'react';
-import { TopInfo } from '../components/ui';
+import { AudioToggles, TopInfo } from '../components/ui';
 import { playSuccess } from '../lib/audio';
 import { C_LEVELS, C_MAX_LEVEL, C_THEMES, GAME_NAMES, TEXTS } from '../lib/constants';
 import { clearProgress, loadLevelPool, saveLevelPool, saveProgress } from '../lib/storage';
@@ -168,6 +168,7 @@ export default function GameC({ playId, resume, onFinish }: GameProps): React.JS
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[520px] flex-col px-5 pt-6 pb-[calc(120px+env(safe-area-inset-bottom))]">
       <TopInfo text={`${GAME_NAMES.C} · 已配对 ${pairsDone}/${pairsTotal} 对 · L${gs.level}`} />
+      <AudioToggles />
 
       <p className="mt-3 text-center text-[1.375rem] text-[#8A7D6E]">
         翻开两张一样的，它们就会留下来

@@ -2,7 +2,7 @@
 // ABOUTME: 当日上限触发时主按钮变灰跳 P4；不显示难度变化；TTS 播鼓励语 1 次
 
 import { useEffect, useMemo, useState } from 'react';
-import { Card, HomeButton, PageShell, PrimaryButton, SoftButton } from '../components/ui';
+import { Card, PageShell, PrimaryButton, SoftButton } from '../components/ui';
 import { DAILY_LIMIT_SETS, GAME_ICONS, GAME_NAMES } from '../lib/constants';
 import { getAllLogs } from '../lib/db';
 import { goHome, navigate } from '../lib/router';
@@ -77,8 +77,6 @@ export default function SetEnd({ playId }: { playId: string }): React.JSX.Elemen
           <SoftButton onClick={() => navigate('/records')}>本周记录</SoftButton>
         </div>
       </div>
-
-      <HomeButton />
     </PageShell>
   );
 }

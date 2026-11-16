@@ -206,6 +206,24 @@ export const TEXTS = {
   dailyBye: '明天我来等您，不着急。',
   shareText: (n: number) => `我在『脑力慢养』今天记住了 ${n} 个数！你也可以来玩 →`,
   shareFallback: '我在『脑力慢养』完成了今天的练习，你也可以来玩 →',
+
+  // ===== 设置页 / 游戏内快捷开关 =====
+  settingsTitle: '设置',
+  settingsEntry: '设置',
+  settingsVoice: '语音播报',
+  settingsVoiceHint: '关掉后，游戏里就不会说话了',
+  settingsSfx: '音效',
+  settingsSfxHint: '关掉后，游戏里就没有提示音了',
+  settingsBigFont: '特大字',
+  settingsBigFontHint: '字放大一点，看着更清楚',
+  settingsRate: '语速',
+  settingsRateSlow: '慢一点',
+  settingsRateOk: '正好',
+  settingsRateFast: '快一点',
+  settingsOn: '开',
+  settingsOff: '关',
+  settingsGameVoice: '语音',
+  settingsGameSfx: '音效',
 };
 
 /** P3 鼓励语池（按成绩选择，随机取一） */
