@@ -37,7 +37,7 @@ src/
 │   ├── tts.ts          # TTS 引擎（首次手势解锁、可关、语速 0.7–1.3、静默降级）
 │   ├── audio.ts        # WebAudio 合成音效（成功三音/柔和二音，无音频文件）
 │   └── utils.ts        # 日期/随机/CSV 转义工具
-├── components/ui.tsx   # PageShell/PrimaryButton/SoftButton/HomeButton/TopInfo/Card/ConfirmDialog/ToggleRow/AudioToggles
+├── components/ui.tsx   # PageShell/PrimaryButton/SoftButton/HomeButton/TopInfo/Card/ConfirmDialog/ToggleRow/AudioToggles/GameHeader
 ├── pages/              # Home(P1) / Game(P2 容器) / SetEnd(P3) / DailyDone(P4) / Records(P5) / Settings(P6)
 └── games/              # GameA 找一找 / GameB 数口令 / GameC 配一对
 ```
@@ -56,7 +56,9 @@ src/
 - **TTS**：`initTtsOnGesture()` 在首次 `pointerdown` 解锁；`speak()` 每次 `cancel()` 旧播报（打断式）；`ttsOn=false` 时全部静默；语速 clamp 到 0.7–1.3。
 - **语音 / 音效开关**：`bf_settings.ttsOn` 与 `bf_settings.sfxOn` **默认都是关闭**（`loadSettings` 只认显式存过的 `true`）。唯一出口：TTS 走 `tts.ts` 的 `speak()`，音效走 `audio.ts` 的 `tone()`——两个函数各自查开关，所以 3 个游戏里不用加任何判断。音效关闭时连 `AudioContext` 都不创建；`primeAudio()` 用于「刚打开开关」这一次点击里创建/恢复 AudioContext（浏览器自动播放策略）。
 - **设置页（P6 `/settings`）**：语音播报 / 音效 / 语速 / 特大字。入口在首页和记录页；`router.tsx` 的 `ROUTE_TOKENS` 已加 `settings`。特大字直接切 `<html class="big-font">`——**不要从 `App.tsx` 导入 `applyFontScale`**（App 依赖 pages，会形成 import 环）。
-- **游戏内快捷开关**：`components/ui.tsx` 的 `AudioToggles`（🎤语音 / 🔔音效 圆片，≥64px）渲染在 3 个游戏 `<TopInfo/>` 正下方，与设置页共用同一份 `bf_settings`。**只能放正文流里**：右上角会压住 GameA 八方向外周目标，右下角会压住 GameB「说完了」按钮。
+- **游戏内快捷开关**：`components/ui.tsx` 的 `AudioToggles`（🎤语音 / 🔔音效 圆片，≥64px）渲染在 3 个游戏 `<GameHeader/>` 正下方，与设置页共用同一份 `bf_settings`。**只能放正文流里**：右上角会压住 GameA 外周目标，右下角会压住 GameB「说完了」按钮。
+- **游戏页顶部栏 `GameHeader`**：`sticky top-0` + 背景色，内含左上角 64×64 纯图标「回家」按钮（`HomeButton placement="inline"`）+ 右侧 compact 胶囊（`TopInfo compact`）。**游戏页不要再自己放 `<HomeButton/>`**（`pages/Game.tsx` 已删）；`HomeButton` 默认的 `floating-bottom`（左下悬浮）只给记录页/设置页用。
+- **GameA 外周图形用固定 3×3 CSS 网格**（`DIR_CELL` 映射方向 → 行列），每格最多一个图形，结构上不可能重叠；中央图标 6.75rem（重演 7.25rem）、外周目标 5rem、干扰项 3rem + opacity-40。`constants.ts` 里的 `ALevelSpec.ringRatio` **只是 PRD 原值，已不参与渲染**——不要再改回极坐标环形排布（手机上必然互相压住）。
 - **B 局去重**：同局 5 串互不重复，首题还与上一局首题（`bf_flags.lastBFirst`）不重复。
 
 ## 部署要点

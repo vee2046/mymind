@@ -2,7 +2,6 @@
 // ABOUTME: 游戏流内跳转全部 replace，返回键任何时候直接回 P1
 
 import { useMemo } from 'react';
-import { HomeButton } from '../components/ui';
 import { DAILY_LIMIT_MS, DAILY_LIMIT_SETS, type GameId } from '../lib/constants';
 import { addLog } from '../lib/db';
 import { navigate } from '../lib/router';
@@ -96,7 +95,6 @@ export default function Game({ id }: { id: GameId }): React.JSX.Element {
       ) : (
         <GameC playId={playId} resume={resume} onFinish={handleFinish} />
       )}
-      <HomeButton />
     </div>
   );
 }

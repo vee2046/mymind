@@ -37,7 +37,7 @@ export const DAILY_LIMIT_SETS = 3;
 // ===== 游戏 A：找一找 =====
 export interface ALevelSpec {
   showMs: number;
-  ringRatio: number; // 外周目标离中心半径（屏宽比）
+  ringRatio: number; // PRD 原值（外周目标离中心半径，屏宽比）；布局已改用固定 3×3 网格，故不再用于渲染
   distractors: number;
   maskMs: number;
 }

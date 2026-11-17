@@ -2,7 +2,7 @@
 // ABOUTME: 时长微调（×0.85/×1.2）+ 级别爬升双维自适应；答错重演重训；无红色无倒计时
 
 import { useEffect, useRef, useState } from 'react';
-import { AudioToggles, TopInfo } from '../components/ui';
+import { AudioToggles, GameHeader } from '../components/ui';
 import { playSoftChime, playSuccess } from '../lib/audio';
 import {
   A_CENTER_NAMES,
@@ -42,7 +42,6 @@ interface QuestionA {
   options: string[];
   showMs: number;
   maskMs: number;
-  ringRatio: number;
   level: number; // 本题实际出题级别（答错后临时降级）
 }
 
@@ -64,6 +63,21 @@ const DIR_GRID: (string | null)[] = [
   'bottom-left', 'bottom', 'bottom-right',
 ];
 
+/**
+ * 8 方向 → 3×3 网格单元（col/row），中央留给大图标。
+ * 每格最多放一个图形：中央 6.75rem、外周目标 5rem、干扰 3rem，互不重叠、互不遮挡。
+ */
+const DIR_CELL: Record<string, { col: number; row: number }> = {
+  'top-left': { col: 1, row: 1 },
+  'top': { col: 2, row: 1 },
+  'top-right': { col: 3, row: 1 },
+  'left': { col: 1, row: 2 },
+  'right': { col: 3, row: 2 },
+  'bottom-left': { col: 1, row: 3 },
+  'bottom': { col: 2, row: 3 },
+  'bottom-right': { col: 3, row: 3 },
+};
+
 function dirLabel(key: string): string {
   return DIRECTIONS.find((d) => d.key === key)?.label ?? key;
 }
@@ -71,17 +85,6 @@ function dirLabel(key: string): string {
 /** 方位名词（TTS/无障碍朗读用）：上→上方、右上→右上角 */
 function dirWord(key: string): string {
   return DIRECTIONS.find((d) => d.key === key)?.word ?? key;
-}
-
-/** 外周目标位置：极角转直角坐标（% 相对舞台，对角向内收 0.72 防出屏） */
-function posOf(dirKey: string, ringRatio: number): { left: string; top: string } {
-  const dir = DIRECTIONS.find((d) => d.key === dirKey) ?? DIRECTIONS[0];
-  const rad = (dir.angle * Math.PI) / 180;
-  const diagonal = dir.angle % 90 !== 0;
-  const r = ringRatio * 50 * (diagonal ? 0.72 : 1);
-  const x = Math.sin(rad) * r;
-  const y = -Math.cos(rad) * r;
-  return { left: `calc(50% + ${x}%)`, top: `calc(50% + ${y}%)` };
 }
 
 export default function GameA({ playId, resume, onFinish }: GameProps): React.JSX.Element {
@@ -143,7 +146,6 @@ export default function GameA({ playId, resume, onFinish }: GameProps): React.JS
       options,
       showMs,
       maskMs: spec.maskMs,
-      ringRatio: spec.ringRatio,
       level: lv,
     };
   };
@@ -320,43 +322,48 @@ export default function GameA({ playId, resume, onFinish }: GameProps): React.JS
   const fading = gs.phase === 'fading';
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[520px] flex-col px-5 pt-6 pb-[calc(120px+env(safe-area-inset-bottom))]">
-      <TopInfo text={`${GAME_NAMES.A} · 第${gs.qIndex + 1}题/${SET_SIZE} · L${gs.level}`} />
+    <div className="mx-auto flex min-h-dvh w-full max-w-[520px] flex-col px-5 pb-[calc(24px+env(safe-area-inset-bottom))]">
+      <GameHeader text={`${GAME_NAMES.A} · 第${gs.qIndex + 1}题/${SET_SIZE} · L${gs.level}`} />
       <AudioToggles />
 
       {/* 主舞台：展示 / 遮罩 / 反馈 */}
       <div className="relative mt-4 min-h-[42dvh] flex-1">
         {q && (showing || fading) ? (
           <div
-            className={`absolute inset-0 rounded-3xl border-2 border-dashed border-[#E4DACB] ${
+            className={`absolute inset-0 grid grid-cols-[1fr_1.45fr_1fr] grid-rows-3 place-items-center rounded-3xl border-2 border-dashed border-[#E4DACB] ${
               fading ? 'bf-fade-out' : 'bf-fade-in'
             }`}
           >
-            {/* 中央大图标（≥120px，重演时 ×1.2） */}
+            {/* 中央大图标（居中列更宽，避免与外周目标贴边；重演时略放大） */}
             <div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 leading-none"
-              style={{ fontSize: gs.phase === 'relearn' ? '9rem' : '7.5rem' }}
+              className="col-start-2 row-start-2 leading-none"
+              style={{ fontSize: gs.phase === 'relearn' ? '7.25rem' : '6.75rem' }}
               aria-label={`中央：${A_CENTER_NAMES[q.center] ?? ''}`}
             >
               {q.center}
             </div>
             {/* 外周目标（≥80px） */}
             <div
-              className="absolute -translate-x-1/2 -translate-y-1/2 leading-none"
+              className="leading-none"
               style={{
-                ...posOf(q.dirKey, q.ringRatio),
-                fontSize: gs.phase === 'relearn' ? '6rem' : '5rem',
+                gridColumn: DIR_CELL[q.dirKey].col,
+                gridRow: DIR_CELL[q.dirKey].row,
+                fontSize: '5rem',
               }}
               aria-label={`外周在${dirWord(q.dirKey)}`}
             >
               {q.peripheral}
             </div>
-            {/* 干扰图形（淡色，不构成信息主体） */}
+            {/* 干扰图形（淡色小图标，不构成信息主体） */}
             {q.distractors.map((d, i) => (
               <div
                 key={`${d.dirKey}-${i}`}
-                className="absolute -translate-x-1/2 -translate-y-1/2 leading-none opacity-40"
-                style={{ ...posOf(d.dirKey, q.ringRatio), fontSize: '3.5rem' }}
+                className="leading-none opacity-40"
+                style={{
+                  gridColumn: DIR_CELL[d.dirKey].col,
+                  gridRow: DIR_CELL[d.dirKey].row,
+                  fontSize: '3rem',
+                }}
                 aria-hidden
               >
                 {d.emoji}

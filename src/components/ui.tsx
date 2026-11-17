@@ -72,23 +72,43 @@ export function SoftButton({
   );
 }
 
-/** 「🏠 回家」底部左下常驻（P2-R05，安全区内固定） */
+/**
+ * 「🏠 回家」按钮。
+ * placement='floating-bottom'：左下角悬浮常驻（P2-R05，安全区内固定）——用于记录页/设置页。
+ * placement='inline'：随页面排版的 64×64 图标按钮——用于游戏页左上角，避免遮挡游戏内容。
+ */
 export function HomeButton({
   onClick,
+  placement = 'floating-bottom',
 }: {
   onClick?: () => void;
+  placement?: 'floating-bottom' | 'inline';
 }): React.JSX.Element {
+  const handle = (): void => {
+    if (onClick) {
+      onClick();
+    } else {
+      goHome();
+    }
+  };
+  if (placement === 'inline') {
+    return (
+      <button
+        type="button"
+        aria-label="回家"
+        title="回家"
+        onClick={handle}
+        className="bf-press flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-2xl bg-white text-[1.75rem] text-[#3E342B] shadow-[0_4px_16px_rgb(62_52_43/0.16)]"
+      >
+        <span aria-hidden>🏠</span>
+      </button>
+    );
+  }
   return (
     <button
       type="button"
       aria-label="回家"
-      onClick={() => {
-        if (onClick) {
-          onClick();
-        } else {
-          goHome();
-        }
-      }}
+      onClick={handle}
       className="bf-press fixed bottom-[calc(16px+env(safe-area-inset-bottom))] left-4 z-40 flex h-[72px] min-w-[96px] items-center justify-center gap-1 rounded-2xl bg-white px-4 text-[1.375rem] font-semibold text-[#3E342B] shadow-[0_4px_16px_rgb(62_52_43/0.16)]"
     >
       <span aria-hidden className="text-[1.75rem]">🏠</span>
@@ -97,14 +117,41 @@ export function HomeButton({
   );
 }
 
-/** P2 顶部信息（P2-R04）：游戏名 · 第n题/5 · Lx */
-export function TopInfo({ text }: { text: string }): React.JSX.Element {
+/** P2 顶部信息（P2-R04）：游戏名 · 第n题/5 · Lx（compact 用于与左侧按钮同排） */
+export function TopInfo({
+  text,
+  compact = false,
+}: {
+  text: string;
+  compact?: boolean;
+}): React.JSX.Element {
   return (
-    <div className="flex items-center justify-center">
-      <p className="rounded-full bg-white px-6 py-2 text-[1.375rem] font-medium text-[#3E342B] shadow-[0_2px_8px_rgb(62_52_43/0.08)]">
+    <div className="flex min-w-0 items-center justify-center">
+      <p
+        className={`rounded-full bg-white font-medium leading-tight text-[#3E342B] shadow-[0_2px_8px_rgb(62_52_43/0.08)] ${
+          compact ? 'px-4 py-2 text-[1.25rem]' : 'px-6 py-2 text-[1.375rem]'
+        }`}
+      >
         {text}
       </p>
     </div>
+  );
+}
+
+/**
+ * 游戏页顶部栏：左上角「回家」+ 右侧信息胶囊。
+ * 吸顶（sticky）且带背景色，滚动时内容从其下方穿过，不会互相遮挡。
+ */
+export function GameHeader({ text }: { text: string }): React.JSX.Element {
+  return (
+    <header className="sticky top-0 z-30 -mx-5 bg-[#FAF6EF] px-5 pb-2 pt-6">
+      <div className="flex items-center gap-3">
+        <HomeButton placement="inline" />
+        <div className="min-w-0 flex-1">
+          <TopInfo text={text} compact />
+        </div>
+      </div>
+    </header>
   );
 }
 
