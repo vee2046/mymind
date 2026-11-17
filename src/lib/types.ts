@@ -27,6 +27,7 @@ export interface LevelPool {
   B: { level: number; streak: number };
   C: { level: number };
   D: { level: number; streak: number };
+  E: { level: number; streak: number };
 }
 
 /** bf_flags */
@@ -116,7 +117,16 @@ export interface ProgressD {
   startedAt: number;
 }
 
-export type Progress = ProgressA | ProgressB | ProgressC | ProgressD;
+export interface ProgressE {
+  gameId: 'E';
+  level: number;
+  qIndex: number;
+  score: number;
+  usedTargets: number[]; // 本局已出目标数（不重复）
+  startedAt: number;
+}
+
+export type Progress = ProgressA | ProgressB | ProgressC | ProgressD | ProgressE;
 
 /** IndexedDB session_log 行（PRD §10） */
 export interface SessionLog {

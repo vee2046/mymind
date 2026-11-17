@@ -40,6 +40,7 @@ interface GS {
   score: number;
   seq: string; // 本题原始数字串
   qLevel: number; // 本题出题级别（答错后临时降级）
+  qReverse: boolean; // 本题是否反向（L4 起逐题随机，不恒反向）
   input: string;
 }
 
@@ -57,6 +58,7 @@ export default function GameB({ playId, resume, onFinish }: GameProps): React.JS
     score: resumeB?.score ?? 0,
     seq: '',
     qLevel: initial.level,
+    qReverse: false,
     input: '',
   });
   const [tick, setTick] = useState(0);
@@ -75,6 +77,8 @@ export default function GameB({ playId, resume, onFinish }: GameProps): React.JS
   const bootedRef = useRef(false);
   // 视觉干扰按题固定（避免渲染期跳动）
   const distractorsRef = useRef<string[]>([]);
+  // 反向/顺说连续计数（避免连续 3 题同向）
+  const modeRef = useRef<{ last: boolean | null; streak: number }>({ last: null, streak: 0 });
 
   const clearTimer = (): void => {
     if (timerRef.current !== null) {
@@ -95,6 +99,19 @@ export default function GameB({ playId, resume, onFinish }: GameProps): React.JS
   const targetOf = (seq: string, reverse: boolean): string =>
     reverse ? seq.split('').reverse().join('') : seq;
 
+  /** 决定本题是否反向：L4 起允许反向，每题抛硬币，但不允许连续 3 题同向 */
+  const decideReverse = (lv: number): boolean => {
+    if (!B_LEVELS[lv].reverse) {
+      modeRef.current = { last: false, streak: 1 };
+      return false;
+    }
+    const m = modeRef.current;
+    let r = Math.random() < 0.5;
+    if (m.last !== null && m.streak >= 2 && r === m.last) r = !r;
+    modeRef.current = r === m.last ? { last: m.last, streak: m.streak + 1 } : { last: r, streak: 1 };
+    return r;
+  };
+
   /** 生成一题并进入展示阶段 */
   const startQuestion = (lv: number): void => {
     clearTimer();
@@ -110,9 +127,10 @@ export default function GameB({ playId, resume, onFinish }: GameProps): React.JS
     }
     // 生成本题视觉干扰（固定，不随渲染变化）
     distractorsRef.current = sample(B_DISTRACT_EMOJI, 3);
-    update({ seq, qLevel: lv, input: '', phase: 'show' });
+    const qReverse = decideReverse(lv);
+    update({ seq, qLevel: lv, qReverse, input: '', phase: 'show' });
     // 反向局在展示数字的同时就提示「这回倒着说」，不能等数字消失才说
-    speak(B_LEVELS[lv].reverse ? `${TEXTS.bReverseHint}，${TEXTS.bBeforeShow}` : TEXTS.bBeforeShow);
+    speak(qReverse ? `${TEXTS.bReverseHint}，${TEXTS.bBeforeShow}` : TEXTS.bBeforeShow);
     timerRef.current = window.setTimeout(() => {
       update({ phase: 'fading' });
       timerRef.current = window.setTimeout(() => {
@@ -124,8 +142,7 @@ export default function GameB({ playId, resume, onFinish }: GameProps): React.JS
         }
         timerRef.current = window.setTimeout(() => {
           update({ phase: 'answer' });
-          const cur = spec();
-          speak(cur.reverse ? TEXTS.bAskReverse : TEXTS.bAskOrder);
+          speak(gsRef.current.qReverse ? TEXTS.bAskReverse : TEXTS.bAskOrder);
         }, s.waitMs);
       }, FADE_OUT_MS);
     }, B_LEVELS[lv].showMs);
@@ -198,7 +215,7 @@ export default function GameB({ playId, resume, onFinish }: GameProps): React.JS
     if (gsRef.current.input.length < B_LEVELS[qLevel].digits) return;
     clearAutoSubmit();
     const s = B_LEVELS[qLevel];
-    const target = targetOf(seq, s.reverse);
+    const target = targetOf(seq, gsRef.current.qReverse);
     const answer = gsRef.current.input;
     let aligned = 0;
     for (let i = 0; i < target.length; i++) {
@@ -218,7 +235,7 @@ export default function GameB({ playId, resume, onFinish }: GameProps): React.JS
     if (correct) {
       handleCorrect(s.digits);
     } else {
-      handleWrong(aligned, seq, s.reverse);
+      handleWrong(aligned, seq, gsRef.current.qReverse);
     }
   };
 
@@ -280,7 +297,7 @@ export default function GameB({ playId, resume, onFinish }: GameProps): React.JS
 
   const s = spec();
   const digits = B_LEVELS[gs.qLevel].digits;
-  const isReverse = B_LEVELS[gs.qLevel].reverse;
+  const isReverse = gs.qReverse;
   const visualDistract = s.distract === 'visual' || s.distract === 'both';
   const panelVisible = gs.phase === 'wait' || gs.phase === 'answer';
   const canSubmit = gs.input.length >= digits && panelVisible;

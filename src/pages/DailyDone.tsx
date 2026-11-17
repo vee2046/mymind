@@ -28,8 +28,10 @@ function buildAchievement(logs: SessionLog[], plays: PlayAgg[]): string[] {
   const cY = yesterdayBest(plays, 'C');
   const dT = todayBest(plays, 'D');
   const dY = yesterdayBest(plays, 'D');
+  const eT = todayBest(plays, 'E');
+  const eY = yesterdayBest(plays, 'E');
 
-  const hasYesterday = bY !== null || aY !== null || cY !== null || dY !== null;
+  const hasYesterday = bY !== null || aY !== null || cY !== null || dY !== null || eY !== null;
   if (!hasYesterday) return [TEXTS.dailyFirstDay];
 
   const lines: string[] = [];
@@ -46,6 +48,9 @@ function buildAchievement(logs: SessionLog[], plays: PlayAgg[]): string[] {
   }
   if (games.includes('D') && dT !== null && dY !== null) {
     lines.push(TEXTS.dDaily(dT, dY));
+  }
+  if (games.includes('E') && eT !== null && eY !== null) {
+    lines.push(`今天帮 ${eT} 个数字找到了家，昨天是 ${eY} 个。`);
   }
   return lines.length > 0 ? lines : [TEXTS.dailyFirstDay];
 }

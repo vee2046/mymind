@@ -21,6 +21,7 @@ import GameA from '../games/GameA';
 import GameB from '../games/GameB';
 import GameC from '../games/GameC';
 import GameD from '../games/GameD';
+import GameE from '../games/GameE';
 
 /** 单题日志草稿（游戏内生成，容器补齐公共字段） */
 export interface LogDraft {
@@ -95,8 +96,10 @@ export default function Game({ id }: { id: GameId }): React.JSX.Element {
         <GameB playId={playId} resume={resume} onFinish={handleFinish} />
       ) : id === 'C' ? (
         <GameC playId={playId} resume={resume} onFinish={handleFinish} />
-      ) : (
+      ) : id === 'D' ? (
         <GameD playId={playId} resume={resume} onFinish={handleFinish} />
+      ) : (
+        <GameE playId={playId} resume={resume} onFinish={handleFinish} />
       )}
     </div>
   );

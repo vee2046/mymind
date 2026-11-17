@@ -1,13 +1,16 @@
-// ABOUTME: PRD §0 全局常量 + 四游戏难度表 + 素材池 + 文案
+// ABOUTME: PRD §0 全局常量 + 五游戏难度表 + 素材池 + 文案
 // ABOUTME: 所有数值以 PRD 为准，禁止随意调整
 
-export type GameId = 'A' | 'B' | 'C' | 'D';
+import { clamp } from './utils';
+
+export type GameId = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export const GAME_NAMES: Record<GameId, string> = {
   A: '找一找',
   B: '数口令',
   C: '配一对',
   D: '赶集',
+  E: '数字找家',
 };
 
 export const GAME_ICONS: Record<GameId, string> = {
@@ -15,6 +18,7 @@ export const GAME_ICONS: Record<GameId, string> = {
   B: '🔢',
   C: '🧩',
   D: '🧺',
+  E: '🏠',
 };
 
 // ===== 时间常量 =====
@@ -110,6 +114,7 @@ export const DIRECTIONS: DirectionSpec[] = [
 // ===== 游戏 B：数口令 =====
 export interface BLevelSpec {
   digits: number;
+  /** L1–3 恒为顺说；L4 起 reverse=true 表示该级可能出现反向局（每题按算法随机决定，不再恒反向） */
   reverse: boolean;
   showMs: number;
   waitMs: number;
@@ -317,6 +322,39 @@ export const D_SUM_CATS = ['fruit', 'veg', 'meat', 'grain', 'drink'] as const;
 /** 算账题单价上限（保证总价不超两位数） */
 export const D_SUM_MAX_PRICE = 12;
 
+// ===== 游戏 E：数字找家（数轴估计） =====
+export interface ELevelSpec {
+  max: number; // 数轴右端（左端恒 0）
+  ticks: number[]; // 标注刻度（含两端）
+  tolerance: number; // 判对容差（±）
+  step: number; // 目标取值步长（1 = 任意整数）
+}
+
+export const E_MAX_LEVEL = 6;
+export const E_LEVELS: Record<number, ELevelSpec> = {
+  1: { max: 10, ticks: [0, 5, 10], tolerance: 1, step: 1 },
+  2: { max: 20, ticks: [0, 10, 20], tolerance: 2, step: 1 },
+  3: { max: 50, ticks: [0, 25, 50], tolerance: 3, step: 5 },
+  4: { max: 100, ticks: [0, 50, 100], tolerance: 5, step: 5 },
+  5: { max: 100, ticks: [0, 25, 50, 75, 100], tolerance: 6, step: 1 },
+  6: { max: 100, ticks: [0, 50, 100], tolerance: 5, step: 1 },
+};
+
+/** 生成一题的目标数：非刻度值、本局不重复 */
+export function genETarget(level: number, exclude: number[]): number {
+  const s = E_LEVELS[clamp(level, 1, E_MAX_LEVEL)];
+  const cands: number[] = [];
+  for (let v = s.step; v <= s.max - s.step; v += s.step) {
+    if (s.ticks.includes(v)) continue;
+    if (exclude.includes(v)) continue;
+    cands.push(v);
+  }
+  if (cands.length === 0) {
+    return Math.max(s.step, Math.round(s.max / 2 / s.step) * s.step);
+  }
+  return cands[Math.floor(Math.random() * cands.length)];
+}
+
 // ===== 文案（PRD 逐字） =====
 export const TEXTS = {
   welcome: '欢迎回来，不着急，我们从最稳的强度开始。',
@@ -360,6 +398,12 @@ export const TEXTS = {
   dPickHint: '照规矩挑好，再按下面的按钮',
   dPickNeed: '先挑几样，再按下面的按钮',
   dSumNeed: '先选一个价钱，再按下面的按钮',
+  eHow: '在线上点一下，再按「放好了」。',
+  eAsk: (n: number) => `帮 ${n} 找家，点一点下面的线。`,
+  eGood: '对了，就是这里，正合适。',
+  eNear: '很近了，就差一点点。',
+  eFar: '没关系，看看它的家在哪儿。',
+  eReveal: (n: number) => `${n} 的家在这里。`,
   relearn: '我们再看一遍',
   p4Farewell: '明天我来等您，不着急。',
   dailyFirstDay: '第一步就完成了，很棒的做法。',
