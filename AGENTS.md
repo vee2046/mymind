@@ -12,7 +12,7 @@ React 19 + TypeScript strict + Vite 7 + Tailwind 3。纯 SPA，**无测试框架
 
 ## 命令
 
-- `pnpm dev`：vite dev server，端口 **5000**，`server.host: true`（同网段手机可直接访问）。幂等可重复跑。
+- `pnpm dev`：vite dev server，端口 **5000**，`server.host: true`（同网段手机可直接访问）。幂等可重复跑。⚠️ 本机 5000 常被 macOS ControlCenter（AirPlay 接收）占着，端口冲突时改用 `--port 5001`。
 - `pnpm build`：产出**纯静态** `dist/`（`base: './'`）。这是唯一的打包命令，产物已在 `.gitignore` 中。
 - `pnpm preview`：本地静态预览 dist（端口 4173）。
 - `pnpm validate`：`pnpm dlx concurrently` 并行跑 `ts-check` + `lint:build` + `lint:style`。⚠️ **concurrently 不是本地依赖，每次会联网下载**；离线环境改跑下面三条单命令。
@@ -67,6 +67,13 @@ src/
 - `index.html` 内联守卫：无尾斜杠访问 `…/mindx` 会自动补斜杠，避免相对资源解析到上级目录。
 - 托管端**有** SPA fallback 时，刷新 `/…/game/A` 这类旧式路径会被 `parsePath`（按路由 token 扫描，兼容任意部署前缀）识别，再由 App 弹回首页。
 - `file://` 双击打开时 `pushState` 抛错，`router.tsx` 自动退回 hash 路由，功能不受影响。
+
+## 上线流程（mymind → h5_tools）
+
+- 产物仓库在**同级目录** `/Users/wuwei/Documents/dev/h5_tools`（纯静态、无源码；`mindx/` 就是本项目产物镜像）。**不要**在里面跑 `pnpm install/dev`，**不要**手改构建产物。
+- 步骤：`pnpm build` → `rm -rf h5_tools/mindx/assets h5_tools/mindx/index.html` → `cp -R mymind/dist/. h5_tools/mindx/` → 在 h5_tools 里 `git add -A && git commit -m "update: mindx页面刷新构建产物（…）" && git push origin main` → 再回 mymind `git push origin main`。产物文件名每次 build 都会变，必须整目录替换。
+- 两个仓库的 origin 都是 SSH `git@github.com:vee2046/…`；本机 `~/.ssh/config` 已把 `github.com` 映射到 `ssh.github.com:443`（直连 github.com:22 超时）。**不要**把 token 写进 remote URL。
+- kmlab_site（`/Users/wuwei/Documents/dev/kmlab_site`，Gitee）另有 `public/data/html_files.json` 索引，**尚未登记 mindx**，需要另开改动时先跟用户确认。
 
 ## 开发规范
 
