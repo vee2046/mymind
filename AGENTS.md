@@ -73,6 +73,8 @@ src/
   - 生成器是纯函数（`market.ts` 不依赖 React），可单独 fuzz 验证；已验证 1.6 万局：目标集非空且 ⊆ 货架、filler 从不命中、改口必产生**不同**命中集的新规则、算账答案与选项恒正确。
   - 进度：`ProgressD{gameId:'D',level,qIndex,score,plan,startedAt}`——**把 5 题计划（题型 + 是否改口）一起存**，恢复时按计划重生成当轮题目，不重复计分。
   - `Records.tsx` 的 `GAME_IDS` 必须包含 `'D'`，否则本周记录不显示赶集；`DailyDone.tsx` 的成就句用 `TEXTS.dDaily(今天, 昨天)`（只与本人昨天比）。
+- **GameE「数字找家」（🏠）＝ 数感训练**（数轴估计 / 数字↔空间映射 / 比例推理）。点数线放数字 →「放好了」确认（可重点点调整）；**容差判对**（`ELevelSpec.tolerance`），答错亮 🏠 即时纠错。自适应规则同 A/B（连对 4 升 / 局末 ≤2 降 / 答错下题降一级出题），级别 L1–6（`E_LEVELS`，0–10 → 0–100）。生成器 `genETarget`：目标数避开刻度值、本局不重复。进度 `ProgressE{usedTargets}`。集成点与 D 相同：`Records.GAME_IDS` 含 `'E'`、`DailyDone` 成就句、`router.tsx` parsePath 与 BASE_DIR 正则 `[ABCDE]`、`storage.ts` lastGameId/level_pool/progress 校验。
+- **数口令反向算法**：`BLevelSpec.reverse` 从「本级恒反向」改为「本级允许反向」——L1–3 恒顺说，L4 起每题抛硬币（50/50），`GameB.decideReverse` 保证不连续 3 题同向（`modeRef`）；本题模式存 `GS.qReverse`，不落盘（恢复时当题重新出）。
 
 ## 部署要点
 
