@@ -1,7 +1,7 @@
 // ABOUTME: localStorage 键值存取（bf_settings / bf_progress / bf_daily / bf_level_pool / bf_flags）
 // ABOUTME: 全部读操作带类型兜底，写操作静默容错
 
-import { aInitialShowMs, LEVEL_START } from './constants';
+import { aInitialShowMs, D_MAX_LEVEL, LEVEL_START } from './constants';
 import type { Daily, Flags, LevelPool, Progress, Settings } from './types';
 import { clamp, todayStr } from './utils';
 
@@ -52,7 +52,10 @@ export function loadSettings(): Settings {
     sfxOn: raw.sfxOn === true,
     ttsRate: clamp(typeof raw.ttsRate === 'number' ? raw.ttsRate : 1.0, 0.7, 1.3),
     lastGameId:
-      raw.lastGameId === 'A' || raw.lastGameId === 'B' || raw.lastGameId === 'C'
+      raw.lastGameId === 'A' ||
+      raw.lastGameId === 'B' ||
+      raw.lastGameId === 'C' ||
+      raw.lastGameId === 'D'
         ? raw.lastGameId
         : null,
     onboarded: raw.onboarded === true,
@@ -100,6 +103,10 @@ export function loadLevelPool(): LevelPool {
       streak: clamp(raw?.B?.streak ?? 0, 0, 3),
     },
     C: { level: clamp(raw?.C?.level ?? 1, 1, 4) },
+    D: {
+      level: clamp(raw?.D?.level ?? LEVEL_START, 1, D_MAX_LEVEL),
+      streak: clamp(raw?.D?.streak ?? 0, 0, 3),
+    },
   };
 }
 
@@ -119,7 +126,8 @@ export function loadProgress(): Progress | null {
     clearProgress();
     return null;
   }
-  if (raw.gameId !== 'A' && raw.gameId !== 'B' && raw.gameId !== 'C') return null;
+  if (raw.gameId !== 'A' && raw.gameId !== 'B' && raw.gameId !== 'C' && raw.gameId !== 'D')
+    return null;
   return raw as Progress;
 }
 

@@ -1,7 +1,7 @@
 // ABOUTME: 全局类型定义（PRD §10 存储结构）
 // ABOUTME: 对应 localStorage 键与 IndexedDB 表
 
-import type { GameId } from './constants';
+import type { DItem, DRuleKind, GameId } from './constants';
 
 /** bf_settings：保留在清空数据之后 */
 export interface Settings {
@@ -26,6 +26,7 @@ export interface LevelPool {
   A: { level: number; showMs: number; streak: number };
   B: { level: number; streak: number };
   C: { level: number };
+  D: { level: number; streak: number };
 }
 
 /** bf_flags */
@@ -70,7 +71,52 @@ export interface ProgressC {
   startedAt: number;
 }
 
-export type Progress = ProgressA | ProgressB | ProgressC;
+/** 游戏 D「赶集」：老板给的一条规矩 */
+export interface DRule {
+  kind: DRuleKind;
+  icon: string;
+  say: string; // 完整说法（展示 + 播报）
+  short: string; // 简版说法（窄条展示）
+  cats: string[]; // 涉及的类目
+  attr: string | null; // 涉及的属性
+  exclude: string[]; // 例外商品的名称
+}
+
+/** 一局的出题计划（第几题是算账题 / 是否改口） */
+export interface DRoundPlan {
+  kind: 'pick' | 'sum';
+  switch: boolean;
+}
+
+/** 挑货题 */
+export interface DPickRound {
+  kind: 'pick';
+  rule: DRule;
+  nextRule: DRule | null; // 改口后的新规矩
+  items: DItem[];
+}
+
+/** 算账题 */
+export interface DSumRound {
+  kind: 'sum';
+  rule: DRule;
+  items: DItem[];
+  answer: number;
+  options: number[];
+}
+
+export type DRound = DPickRound | DSumRound;
+
+export interface ProgressD {
+  gameId: 'D';
+  level: number;
+  qIndex: number;
+  score: number;
+  plan: DRoundPlan[]; // 本局 5 题的出题计划
+  startedAt: number;
+}
+
+export type Progress = ProgressA | ProgressB | ProgressC | ProgressD;
 
 /** IndexedDB session_log 行（PRD §10） */
 export interface SessionLog {

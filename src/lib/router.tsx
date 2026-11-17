@@ -24,7 +24,7 @@ export function parsePath(path: string): Route {
   const token = parts[i];
   if (token === 'game') {
     const id = parts[i + 1];
-    if (id === 'A' || id === 'B' || id === 'C') return { name: 'game', id };
+    if (id === 'A' || id === 'B' || id === 'C' || id === 'D') return { name: 'game', id };
     return { name: 'home' };
   }
   if (token === 'end') {
@@ -54,7 +54,7 @@ function currentRoute(): Route {
  */
 const BASE_DIR: string = (() => {
   const p = window.location.pathname;
-  const m = p.match(/\/(?:game\/[ABC]|end\/[^/]+|daily-done|records)(?:\/|$)/);
+  const m = p.match(/\/(?:game\/[ABCD]|end\/[^/]+|daily-done|records)(?:\/|$)/);
   const cut = m && m.index !== undefined ? p.slice(0, m.index + 1) : p;
   return cut.endsWith('/') ? cut : cut.replace(/[^/]*$/, '');
 })();

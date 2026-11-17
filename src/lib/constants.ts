@@ -1,18 +1,20 @@
-// ABOUTME: PRD §0 全局常量 + 三游戏难度表 + 素材池 + 文案
+// ABOUTME: PRD §0 全局常量 + 四游戏难度表 + 素材池 + 文案
 // ABOUTME: 所有数值以 PRD 为准，禁止随意调整
 
-export type GameId = 'A' | 'B' | 'C';
+export type GameId = 'A' | 'B' | 'C' | 'D';
 
 export const GAME_NAMES: Record<GameId, string> = {
   A: '找一找',
   B: '数口令',
   C: '配一对',
+  D: '赶集',
 };
 
 export const GAME_ICONS: Record<GameId, string> = {
   A: '🔍',
   B: '🔢',
   C: '🧩',
+  D: '🧺',
 };
 
 // ===== 时间常量 =====
@@ -182,6 +184,139 @@ export const C_THEMES: { name: string; emojis: string[] }[] = [
   { name: '生活', emojis: ['☂️', '🔑', '🧦', '🍵', '📱', '🧸'] },
 ];
 
+// ===== 游戏 D：赶集（语义选择 / 抑制 / 工作记忆更新 / 心算） =====
+// 认知靶点：执行功能——语义提取、集合合并、属性推理、例外抑制、
+// 「老板改口」造成的规则失效与工作记忆重更新，以及心算。
+
+/** 规则种类：category 单一类目 / union 两类都要 / attribute 属性
+ *  except 类目+例外 / negation 整体取补集 / sum 算总价 */
+export type DRuleKind = 'category' | 'union' | 'attribute' | 'except' | 'negation' | 'sum';
+
+/** 摊位上的一件货 */
+export interface DItem {
+  id: string;
+  emoji: string;
+  name: string;
+  cat: string; // 所属类目
+  price: number; // 价格（元）
+  attr?: string; // 语义属性：canDrink / staple / canWork
+}
+
+/** 可作为规则目标的类目（其余类目只做陪衬，保证规则无歧义） */
+export const D_RULE_CATS = ['fruit', 'veg', 'meat', 'clean', 'flower'] as const;
+
+export const D_CAT_NAMES: Record<string, string> = {
+  fruit: '水果',
+  veg: '蔬菜',
+  meat: '肉蛋',
+  clean: '清洁用品',
+  flower: '花木',
+  grain: '主食',
+  drink: '饮料',
+  tool: '工具',
+  toy: '杂货',
+};
+
+export const D_ATTR_NAMES: Record<string, string> = {
+  canDrink: '能喝的',
+  staple: '当饭吃的',
+  canWork: '干活用的',
+};
+
+export const D_ATTR_ICONS: Record<string, string> = {
+  canDrink: '💧',
+  staple: '🍚',
+  canWork: '🔧',
+};
+
+/** 商品池：规则可命中项一律不带属性，属性项一律不可被类目规则命中，两者不交叉 */
+export const D_CATALOG: DItem[] = [
+  // 水果
+  { id: 'apple', emoji: '🍎', name: '苹果', cat: 'fruit', price: 5 },
+  { id: 'banana', emoji: '🍌', name: '香蕉', cat: 'fruit', price: 3 },
+  { id: 'grape', emoji: '🍇', name: '葡萄', cat: 'fruit', price: 9 },
+  { id: 'orange', emoji: '🍊', name: '橘子', cat: 'fruit', price: 4 },
+  { id: 'strawberry', emoji: '🍓', name: '草莓', cat: 'fruit', price: 10 },
+  { id: 'peach', emoji: '🍑', name: '桃子', cat: 'fruit', price: 6 },
+  // 蔬菜
+  { id: 'cabbage', emoji: '🥬', name: '白菜', cat: 'veg', price: 2 },
+  { id: 'carrot', emoji: '🥕', name: '胡萝卜', cat: 'veg', price: 3 },
+  { id: 'eggplant', emoji: '🍆', name: '茄子', cat: 'veg', price: 4 },
+  { id: 'cauliflower', emoji: '🥦', name: '花菜', cat: 'veg', price: 5 },
+  { id: 'cucumber', emoji: '🥒', name: '黄瓜', cat: 'veg', price: 3 },
+  { id: 'onion', emoji: '🧅', name: '洋葱', cat: 'veg', price: 3 },
+  // 肉蛋
+  { id: 'egg', emoji: '🥚', name: '鸡蛋', cat: 'meat', price: 6 },
+  { id: 'chicken', emoji: '🐔', name: '鸡肉', cat: 'meat', price: 12 },
+  { id: 'beef', emoji: '🥩', name: '牛肉', cat: 'meat', price: 15 },
+  { id: 'fish', emoji: '🐟', name: '鱼', cat: 'meat', price: 10 },
+  { id: 'shrimp', emoji: '🦐', name: '虾', cat: 'meat', price: 14 },
+  // 清洁用品
+  { id: 'soap', emoji: '🧴', name: '香皂', cat: 'clean', price: 6 },
+  { id: 'tissue', emoji: '🧻', name: '纸巾', cat: 'clean', price: 3 },
+  { id: 'toothbrush', emoji: '🪥', name: '牙刷', cat: 'clean', price: 5 },
+  { id: 'detergent', emoji: '🧼', name: '洗衣粉', cat: 'clean', price: 8 },
+  { id: 'sponge', emoji: '🧽', name: '海绵', cat: 'clean', price: 2 },
+  // 花木
+  { id: 'tulip', emoji: '🌷', name: '郁金香', cat: 'flower', price: 5 },
+  { id: 'rose', emoji: '🌹', name: '玫瑰', cat: 'flower', price: 7 },
+  { id: 'sunflower', emoji: '🌻', name: '向日葵', cat: 'flower', price: 4 },
+  { id: 'pothos', emoji: '🌿', name: '绿萝', cat: 'flower', price: 6 },
+  { id: 'cactus', emoji: '🌵', name: '仙人掌', cat: 'flower', price: 5 },
+  // 主食（当饭吃的）
+  { id: 'rice', emoji: '🍚', name: '米饭', cat: 'grain', price: 2, attr: 'staple' },
+  { id: 'noodle', emoji: '🍜', name: '面条', cat: 'grain', price: 4, attr: 'staple' },
+  { id: 'bread', emoji: '🍞', name: '面包', cat: 'grain', price: 5, attr: 'staple' },
+  { id: 'dumpling', emoji: '🥟', name: '饺子', cat: 'grain', price: 8, attr: 'staple' },
+  { id: 'onigiri', emoji: '🍙', name: '饭团', cat: 'grain', price: 6, attr: 'staple' },
+  // 饮料（能喝的）
+  { id: 'tea', emoji: '🍵', name: '茶', cat: 'drink', price: 4, attr: 'canDrink' },
+  { id: 'milk', emoji: '🥛', name: '牛奶', cat: 'drink', price: 6, attr: 'canDrink' },
+  { id: 'juice', emoji: '🥤', name: '果汁', cat: 'drink', price: 5, attr: 'canDrink' },
+  { id: 'soda', emoji: '🧃', name: '汽水', cat: 'drink', price: 3, attr: 'canDrink' },
+  { id: 'coffee', emoji: '☕', name: '咖啡', cat: 'drink', price: 8, attr: 'canDrink' },
+  // 工具（干活用的）
+  { id: 'hammer', emoji: '🔨', name: '锤子', cat: 'tool', price: 12, attr: 'canWork' },
+  { id: 'scissors', emoji: '✂️', name: '剪刀', cat: 'tool', price: 8, attr: 'canWork' },
+  { id: 'wrench', emoji: '🔧', name: '扳手', cat: 'tool', price: 15, attr: 'canWork' },
+  { id: 'ladder', emoji: '🪜', name: '梯子', cat: 'tool', price: 18, attr: 'canWork' },
+  { id: 'pickaxe', emoji: '⛏️', name: '镐子', cat: 'tool', price: 14, attr: 'canWork' },
+  // 杂货（纯陪衬）
+  { id: 'teddy', emoji: '🧸', name: '小熊', cat: 'toy', price: 25 },
+  { id: 'balloon', emoji: '🎈', name: '气球', cat: 'toy', price: 1 },
+  { id: 'kite', emoji: '🪁', name: '风筝', cat: 'toy', price: 6 },
+];
+
+export interface DLevelSpec {
+  items: number; // 摊位商品数上限
+  sumRounds: number; // 算账题占比（0–1）
+  rules: DRuleKind[]; // 本级可用的规则种类
+  switchable: boolean; // 本级是否可能「改口」
+  minSwitches: number; // 一局至少改口次数
+  sumItems: number; // 算账题参与求和的商品数
+  maxTargets: number; // 挑货题最多命中件数
+  negExcludes: number; // 「除了…」可排除件数
+  ruleDisplay: 'full' | 'slim' | 'hidden'; // 规则呈现方式
+  ruleShowMs: number; // 规则展示时长
+}
+
+export const D_MAX_LEVEL = 8;
+export const D_LEVELS: Record<number, DLevelSpec> = {
+  1: { items: 4, sumRounds: 0, rules: ['category'], switchable: false, minSwitches: 0, sumItems: 2, maxTargets: 2, negExcludes: 1, ruleDisplay: 'full', ruleShowMs: 2600 },
+  2: { items: 5, sumRounds: 0, rules: ['category'], switchable: false, minSwitches: 0, sumItems: 2, maxTargets: 2, negExcludes: 1, ruleDisplay: 'full', ruleShowMs: 2400 },
+  3: { items: 6, sumRounds: 0, rules: ['category', 'union'], switchable: false, minSwitches: 0, sumItems: 2, maxTargets: 3, negExcludes: 1, ruleDisplay: 'full', ruleShowMs: 2200 },
+  4: { items: 6, sumRounds: 0.2, rules: ['category', 'union'], switchable: true, minSwitches: 1, sumItems: 3, maxTargets: 3, negExcludes: 1, ruleDisplay: 'slim', ruleShowMs: 2000 },
+  5: { items: 7, sumRounds: 0.2, rules: ['category', 'union', 'attribute'], switchable: true, minSwitches: 1, sumItems: 3, maxTargets: 3, negExcludes: 1, ruleDisplay: 'slim', ruleShowMs: 1800 },
+  6: { items: 8, sumRounds: 0.2, rules: ['category', 'union', 'attribute', 'except'], switchable: true, minSwitches: 1, sumItems: 4, maxTargets: 4, negExcludes: 1, ruleDisplay: 'slim', ruleShowMs: 1600 },
+  7: { items: 8, sumRounds: 0.2, rules: ['category', 'union', 'attribute', 'except', 'negation'], switchable: true, minSwitches: 1, sumItems: 4, maxTargets: 4, negExcludes: 1, ruleDisplay: 'hidden', ruleShowMs: 2000 },
+  8: { items: 8, sumRounds: 0.4, rules: ['category', 'union', 'attribute', 'except', 'negation'], switchable: true, minSwitches: 2, sumItems: 4, maxTargets: 4, negExcludes: 2, ruleDisplay: 'hidden', ruleShowMs: 2200 },
+};
+
+/** 算账题可用的商品类目（只挑日常买菜，单价温和好口算） */
+export const D_SUM_CATS = ['fruit', 'veg', 'meat', 'grain', 'drink'] as const;
+/** 算账题单价上限（保证总价不超两位数） */
+export const D_SUM_MAX_PRICE = 12;
+
 // ===== 文案（PRD 逐字） =====
 export const TEXTS = {
   welcome: '欢迎回来，不着急，我们从最稳的强度开始。',
@@ -202,6 +337,29 @@ export const TEXTS = {
     `刚才出现的是 ${seq.split('').join('、')}，反着说就是 ${rev.split('').join('、')}。一起再看一遍。`,
   cFirstFlip: '记住它们在哪儿。',
   cDone: (moves: number) => `全部找到啦，用了 ${moves} 次。`,
+  dGreeting: '老板说',
+  dSwitchBanner: '等等，改主意了',
+  dSwitchIntro: (say: string) => `等等，改主意了 —— ${say}`,
+  dGood: '挑得真准，就这么办。',
+  dGoodSum: '算得对，一点没错。',
+  dMiss: '没关系，我们再看一遍。',
+  dRelearn: '我们再看一遍',
+  dTake: '该拿',
+  dSkip: '不用拿',
+  dTotal: (n: number) => `一共是 ${n} 元`,
+  dSumAsk: '这些一起买，算算一共多少钱？',
+  dSumPick: '选一个价钱',
+  dRecall: '👀 想起来了',
+  dRecallHint: '看一眼刚才的规矩',
+  dHidden: '规矩收起来啦',
+  dConfirm: '挑好了',
+  dConfirmSum: '就这些',
+  dSwitchTag: '改过主意',
+  dSeeStall: '看看摊位上的货',
+  dDaily: (t: number, y: number) => `今天赶集挑对 ${t} 题，昨天是 ${y} 题。`,
+  dPickHint: '照规矩挑好，再按下面的按钮',
+  dPickNeed: '先挑几样，再按下面的按钮',
+  dSumNeed: '先选一个价钱，再按下面的按钮',
   relearn: '我们再看一遍',
   p4Farewell: '明天我来等您，不着急。',
   dailyFirstDay: '第一步就完成了，很棒的做法。',

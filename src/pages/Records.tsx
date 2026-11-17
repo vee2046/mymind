@@ -20,7 +20,7 @@ import {
 import { csvEscape } from '../lib/utils';
 import type { SessionLog } from '../lib/types';
 
-const GAME_IDS: GameId[] = ['A', 'B', 'C'];
+const GAME_IDS: GameId[] = ['A', 'B', 'C', 'D'];
 
 const ARROW_VIEW: Record<ArrowDir, { icon: string; cls: string; text: string }> = {
   up: { icon: '↑', cls: 'text-[#5C8A5A]', text: '比上周更稳' },

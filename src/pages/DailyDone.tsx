@@ -26,8 +26,10 @@ function buildAchievement(logs: SessionLog[], plays: PlayAgg[]): string[] {
   const aY = yesterdayBest(plays, 'A');
   const cT = todayBest(plays, 'C');
   const cY = yesterdayBest(plays, 'C');
+  const dT = todayBest(plays, 'D');
+  const dY = yesterdayBest(plays, 'D');
 
-  const hasYesterday = bY !== null || aY !== null || cY !== null;
+  const hasYesterday = bY !== null || aY !== null || cY !== null || dY !== null;
   if (!hasYesterday) return [TEXTS.dailyFirstDay];
 
   const lines: string[] = [];
@@ -41,6 +43,9 @@ function buildAchievement(logs: SessionLog[], plays: PlayAgg[]): string[] {
   if (games.includes('C') && cT !== null && cY !== null) {
     const extra = cT < cY ? '，更利索' : '';
     lines.push(`今天拼图用了 ${cT} 次，昨天是 ${cY} 次${extra}。`);
+  }
+  if (games.includes('D') && dT !== null && dY !== null) {
+    lines.push(TEXTS.dDaily(dT, dY));
   }
   return lines.length > 0 ? lines : [TEXTS.dailyFirstDay];
 }
