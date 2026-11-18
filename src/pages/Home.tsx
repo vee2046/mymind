@@ -129,17 +129,12 @@ export default function Home(): React.JSX.Element {
 
   return (
     <PageShell>
-      <header className="bf-rise text-center">
-        <h1 className="text-[2.25rem] font-bold tracking-wide">脑力慢养</h1>
-        <p className="mt-1 text-[1.25rem] text-[#8A7D6E]">每天几分钟，慢慢练</p>
-      </header>
-
       {/* 继续刚才的（中断恢复卡） */}
       {progress && progressLabel ? (
         <button
           type="button"
           onClick={onPrimary}
-          className="bf-press bf-rise mt-5 flex min-h-[64px] w-full items-center justify-between rounded-2xl border border-[#E4DACB] bg-[#F3EDE3] px-5 py-3 text-left"
+          className="bf-press bf-rise flex min-h-[64px] w-full items-center justify-between rounded-2xl border border-[#E4DACB] bg-[#F3EDE3] px-5 py-3 text-left"
         >
           <span className="text-[1.375rem] font-medium">继续刚才的：{progressLabel}</span>
           <span aria-hidden className="text-[1.5rem]">▶</span>

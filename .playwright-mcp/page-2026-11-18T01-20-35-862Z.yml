@@ -1,0 +1,27 @@
+- generic [ref=e3]:
+  - button "继续今天的练习" [ref=e5] [cursor=pointer]
+  - generic [ref=e6]:
+    - button "找一找" [ref=e7] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e8]: 🔍
+      - generic [aria-hidden] [ref=e10]: ›
+    - button "数口令" [ref=e11] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e12]: 🔢
+      - generic [aria-hidden] [ref=e14]: ›
+    - button "配一对" [ref=e15] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e16]: 🧩
+      - generic [aria-hidden] [ref=e18]: ›
+    - button "赶集" [ref=e19] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e20]: 🧺
+      - generic [aria-hidden] [ref=e22]: ›
+    - button "数字找家" [ref=e23] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e24]: 🏠
+      - generic [aria-hidden] [ref=e26]: ›
+  - paragraph [ref=e27]: 本周玩了 0 天
+  - generic [ref=e28]:
+    - button "本周记录" [ref=e29] [cursor=pointer]
+    - button "发给家人" [ref=e30] [cursor=pointer]
+  - button "设置" [ref=e32] [cursor=pointer]
+  - generic [ref=e33]:
+    - paragraph [ref=e34]: 把「脑力慢养」放到手机主屏，下次点一下就能进来。
+    - paragraph [ref=e35]: 微信里点右上角「···」，再选「添加到桌面」。
+    - button "知道啦" [ref=e37] [cursor=pointer]
