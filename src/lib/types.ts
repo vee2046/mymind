@@ -10,6 +10,7 @@ export interface Settings {
   sfxOn: boolean; // 音效（WebAudio 合成音），默认关闭
   ttsRate: number; // 0.7–1.3
   lastGameId: GameId | null;
+  lastPlayed: Partial<Record<GameId, number>>; // 各游戏最近一次进入时间（ms 时间戳），首页游戏卡按此排序
   onboarded: boolean; // 添加到主屏引导卡已关闭
   welcomed: boolean; // 本次会话是否已播欢迎语（运行期覆盖）
 }

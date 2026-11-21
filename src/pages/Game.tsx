@@ -1,7 +1,7 @@
 // ABOUTME: P2 游戏容器：难度池读取、局结算（写日志/日累计/难度持久化）、P3/P4 跳转
 // ABOUTME: 游戏流内跳转全部 replace，返回键任何时候直接回 P1
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { DAILY_LIMIT_MS, DAILY_LIMIT_SETS, type GameId } from '../lib/constants';
 import { addLog } from '../lib/db';
 import { navigate } from '../lib/router';
@@ -45,6 +45,12 @@ export default function Game({ id }: { id: GameId }): React.JSX.Element {
   const playId = useMemo(() => uid(), []);
   const progress = loadProgress();
   const resume = progress && progress.gameId === id ? progress : null;
+
+  // 记录「最近玩这个游戏的时间」：首页游戏卡按此排序（进入即算，不要求玩完整局）
+  useEffect(() => {
+    const s = loadSettings();
+    saveSettings({ ...s, lastGameId: id, lastPlayed: { ...s.lastPlayed, [id]: Date.now() } });
+  }, [id]);
 
   const handleFinish = (summary: SetSummary, drafts: LogDraft[]): void => {
     const now = Date.now();

@@ -1,7 +1,8 @@
 // ABOUTME: localStorage 键值存取（bf_settings / bf_progress / bf_daily / bf_level_pool / bf_flags）
 // ABOUTME: 全部读操作带类型兜底，写操作静默容错
 
-import { aInitialShowMs, D_MAX_LEVEL, E_MAX_LEVEL, LEVEL_START } from './constants';
+import { aInitialShowMs, D_MAX_LEVEL, E_MAX_LEVEL, GAME_IDS, LEVEL_START } from './constants';
+import type { GameId } from './constants';
 import type { Daily, Flags, LevelPool, Progress, Settings } from './types';
 import { clamp, todayStr } from './utils';
 
@@ -38,9 +39,21 @@ export const DEFAULT_SETTINGS: Settings = {
   sfxOn: false,
   ttsRate: 1.0,
   lastGameId: null,
+  lastPlayed: {},
   onboarded: false,
   welcomed: false,
 };
+
+/** 各游戏最近进入时间：只保留合法游戏 id + 有限正数时间戳 */
+function sanitizeLastPlayed(raw: unknown): Partial<Record<GameId, number>> {
+  const out: Partial<Record<GameId, number>> = {};
+  if (!raw || typeof raw !== 'object') return out;
+  for (const id of GAME_IDS) {
+    const v = (raw as Record<string, unknown>)[id];
+    if (typeof v === 'number' && Number.isFinite(v) && v > 0) out[id] = v;
+  }
+  return out;
+}
 
 export function loadSettings(): Settings {
   const raw = readJson<Settings>(KEYS.settings);
@@ -59,9 +72,18 @@ export function loadSettings(): Settings {
       raw.lastGameId === 'E'
         ? raw.lastGameId
         : null,
+    lastPlayed: sanitizeLastPlayed(raw.lastPlayed),
     onboarded: raw.onboarded === true,
     welcomed: raw.welcomed === true,
   };
+}
+
+/** 首页游戏卡顺序：最近玩过的排前面，没玩过的按默认顺序补在后面 */
+export function sortGamesByRecent(settings: Settings): GameId[] {
+  const played = settings.lastPlayed ?? {};
+  return GAME_IDS.map((id, i) => ({ id, i, t: played[id] ?? 0 }))
+    .sort((a, b) => b.t - a.t || a.i - b.i)
+    .map((x) => x.id);
 }
 
 export function saveSettings(s: Settings): void {

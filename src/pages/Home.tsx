@@ -1,7 +1,7 @@
 // ABOUTME: P1 首页：打开后 ≤1 次点击进入游戏
 // ABOUTME: 主按钮 / 3 游戏卡 / 本周天数 / 欢迎播报 / 主屏引导卡 / 发给家人 / 周末圆点
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, PageShell, PrimaryButton, SoftButton } from '../components/ui';
 import {
   DAILY_LIMIT_MS,
@@ -22,6 +22,7 @@ import {
   loadSettings,
   saveFlags,
   saveSettings,
+  sortGamesByRecent,
 } from '../lib/storage';
 import { aggregatePlays, playedDaysWithin } from '../lib/stats';
 import type { Progress, Settings } from '../lib/types';
@@ -127,6 +128,9 @@ export default function Home(): React.JSX.Element {
     return `${GAME_NAMES[progress.gameId]} · 第 ${progress.qIndex + 1} 题`;
   })();
 
+  // 游戏卡顺序：最近玩过的排最上面，没玩过的按默认顺序补在后面（不写死顺序）
+  const gameOrder = useMemo(() => sortGamesByRecent(settings), [settings]);
+
   return (
     <PageShell>
       {/* 继续刚才的（中断恢复卡） */}
@@ -148,9 +152,9 @@ export default function Home(): React.JSX.Element {
         </PrimaryButton>
       </div>
 
-      {/* P1-2 三个游戏卡（垂直排列，卡高 ≥96px） */}
+      {/* P1-2 游戏卡（垂直排列，卡高 ≥96px；顺序按最近玩过的时间排） */}
       <div className="mt-6 flex flex-col gap-4">
-        {(Object.keys(GAME_NAMES) as GameId[]).map((id) => (
+        {gameOrder.map((id) => (
           <button
             key={id}
             type="button"

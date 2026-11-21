@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, HomeButton, PageShell, SoftButton } from '../components/ui';
-import { GAME_ICONS, GAME_NAMES, WEEKLY_PRAISE, type GameId } from '../lib/constants';
+import { GAME_ICONS, GAME_IDS, GAME_NAMES, WEEKLY_PRAISE } from '../lib/constants';
 import { clearLogs, getAllLogs } from '../lib/db';
 import { navigate } from '../lib/router';
 import { clearAllData, loadFlags } from '../lib/storage';
@@ -19,8 +19,6 @@ import {
 } from '../lib/stats';
 import { csvEscape } from '../lib/utils';
 import type { SessionLog } from '../lib/types';
-
-const GAME_IDS: GameId[] = ['A', 'B', 'C', 'D', 'E'];
 
 const ARROW_VIEW: Record<ArrowDir, { icon: string; cls: string; text: string }> = {
   up: { icon: '↑', cls: 'text-[#5C8A5A]', text: '比上周更稳' },

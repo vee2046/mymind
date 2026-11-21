@@ -51,6 +51,7 @@ src/
   - C：难度只随**完成局数 +1**（上限 L4），无对错概念。
   - D：规则同 A/B（连对 4 题升级、局末答对 ≤2 降级、答错后下一题用 LEVEL-1），但难度参数由 `D_LEVELS` 的**规则种类**驱动（见下）。
 - **进度恢复**：每题 / 每手牌实时写 `bf_progress`；**仅当天有效**（隔天丢弃，级别仍由 level_pool 继承）；恢复时当前题重新展示，**不重复计分**（E-02）。首页「继续刚才的」卡与主按钮都会恢复；四个游戏卡则 `clearProgress()` 后新开一局。
+- **首页游戏卡顺序不写死**：`bf_settings.lastPlayed`（各游戏最近一次**进入**时间戳，`pages/Game.tsx` 挂载时写入，不要求玩完整局）→ `storage.sortGamesByRecent()` 按时间倒序，没玩过的按 `GAME_IDS`（A–E）补在后面。首次使用 / 清空数据后即默认顺序。`GAME_IDS`（`constants.ts`）是唯一顺序源（首页与记录页共用），不要再在页面里另写数组。
 - **初始路由守卫**：`App.tsx` 在打开/刷新时若 URL 落在 `/game/:id` 会 `navigate('/', {replace:true})` 弹回首页——**不自动开局**，必须由用户点「继续刚才的」或游戏卡。
 - **日结算（P4）**：局结束写日志 → 更新 `bf_daily`（当日 ≥3 局 `DAILY_LIMIT_SETS` 或 ≥10 分钟 `DAILY_LIMIT_MS`）→ 自动跳 `/daily-done`，**同日仅一次**（`bf_flags.p4ShownDate`）。
 - **P3/P4 的结果不是存的汇总表**，而是每次从 IndexedDB `session_log` 实时聚合（`stats.ts`）。新增游戏时必须保证日志字段（level/seq/isCorrect/answer/target/durationMs/movesCount）完整，否则 P3/P4 显示不出来。

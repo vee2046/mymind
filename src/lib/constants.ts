@@ -5,6 +5,9 @@ import { clamp } from './utils';
 
 export type GameId = 'A' | 'B' | 'C' | 'D' | 'E';
 
+/** 全部游戏的默认展示顺序（首页会按最近玩过的时间重新排序） */
+export const GAME_IDS: GameId[] = ['A', 'B', 'C', 'D', 'E'];
+
 export const GAME_NAMES: Record<GameId, string> = {
   A: '找一找',
   B: '数口令',
